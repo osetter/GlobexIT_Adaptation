@@ -1,0 +1,83 @@
+import { defineConfig } from "eslint/config";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+
+export default defineConfig([
+	{
+		files: ["**/*.js", "**/*.ts"],
+		ignores: ["build/**", "dist/**"],
+
+		plugins: {
+			"@typescript-eslint": typescriptEslint,
+		},
+
+		languageOptions: {
+			parser: tsParser,
+			ecmaVersion: "latest",
+			sourceType: "module",
+		},
+
+		rules: {
+			"@typescript-eslint/no-empty-function": "off",
+			"@typescript-eslint/no-explicit-any": "off",
+			"@typescript-eslint/no-unused-vars": "warn",
+
+			"no-trailing-spaces": "warn",
+			"no-multiple-empty-lines": "warn",
+			"no-multi-spaces": "warn",
+
+			"no-lonely-if": "warn",
+
+			"comma-dangle": ["warn", "never"],
+			"comma-spacing": ["warn", { before: false, after: true, }],
+
+			"line-comment-position": ["warn", { ignorePattern: ".", }],
+			"lines-around-comment": ["warn", { beforeBlockComment: true }],
+
+			"max-len": ["warn", { code: 250 }],
+
+			"indent": ["warn", "tab", { SwitchCase: 1 }],
+
+			"keyword-spacing": "warn",
+			"space-before-blocks": "warn",
+			"quotes": "off",
+			"array-bracket-spacing": ["warn", "never"],
+			"block-spacing": "warn",
+			"brace-style": "warn",
+			"func-call-spacing": ["warn", "never"],
+
+			"padding-line-between-statements": [
+				"warn",
+				{
+					blankLine: "always",
+					prev: "function",
+					next: "function",
+				},
+				{
+					blankLine: "always",
+					prev: "function",
+					next: "block",
+				},
+				{
+					blankLine: "always",
+					prev: "block",
+					next: "function",
+				},
+				{
+					blankLine: "always",
+					prev: "*",
+					next: "return",
+				},
+			],
+
+			"semi-spacing": ["warn", { before: false, after: true }],
+
+			"space-before-function-paren": ["warn", "never"],
+			"allowAllPropertiesOnSameLine": "off",
+			"object-property-newline": "warn",
+
+			"no-alert": "error",
+			"no-eval": "error",
+		},
+	},
+]);
