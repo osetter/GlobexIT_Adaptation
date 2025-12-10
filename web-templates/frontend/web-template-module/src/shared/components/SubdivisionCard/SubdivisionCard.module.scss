@@ -1,0 +1,34 @@
+.subdivision-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &--selected {
+    border-color: #1890ff;
+    background-color: #e6f7ff;
+  }
+
+  :global(.ant-card-body) {
+    padding: 12px;
+  }
+}
+
+.subdivision-card__name {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.subdivision-card__id {
+  margin: 0;
+  font-size: 11px;
+  color: #8c8c8c;
+  line-height: 1.3;
+}

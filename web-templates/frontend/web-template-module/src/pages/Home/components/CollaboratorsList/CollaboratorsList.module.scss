@@ -1,0 +1,25 @@
+.collaborators-list__loader {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 40px;
+	grid-column: 1 / -1;
+}
+
+.collaborators-list__empty {
+	text-align: center;
+	color: #8c8c8c;
+	padding: 40px;
+	font-size: 14px;
+	grid-column: 1 / -1;
+}
+
+.collaborators-list__title {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 16px;
+	color: #262626;
+	text-align: center;
+	grid-column: 1 / -1;
+}
+
