@@ -16,15 +16,30 @@
     text-align: center;
   }
 
+  &__tabs {
+    margin-top: 24px;
+
+    :global(.ant-tabs-content-holder) {
+      padding-top: 24px;
+    }
+  }
+
   &__content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
-    margin-top: 24px;
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
+  }
+
+  &__collaborators-tab {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
   }
 
   &__subdivisions {

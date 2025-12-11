@@ -32,7 +32,7 @@ function getSubdivisions() {
 	}
 }
 
-function getCollaborators(subdivisionId: number) {
+function getSubdivisionCollaborators(subdivisionId: number) {
 	try {
 		const collaborators = selectAll<ICollaborator>(`
 			SELECT
@@ -48,6 +48,50 @@ function getCollaborators(subdivisionId: number) {
 	}
 }
 
+function getAllCollaboratorsList() {
+	try {
+		const collaborators = selectAll<ICollaborator>(`
+			SELECT
+				t0.id,
+				t0.fullname
+			FROM dbo.collaborators t0
+		`);
+
+		return collaborators;
+	} catch (e) {
+		throw Error("getAllCollaboratorsList -> " + e);
+	}
+}
+
+function getCollaboratorDetails(collaboratorId: number) {
+	try {
+		const collaborators = selectAll<ICollaborator>(`
+			SELECT
+				t0.id,
+				t1.fullname,
+				
+				-- Поля history_states
+				unnest(xpath('/collaborator/history_states/history_state/state_id/text()', t0.data::xml))::text AS history_state_state_id,
+				unnest(xpath('/collaborator/history_states/history_state/start_date/text()', t0.data::xml))::text AS history_state_start_date,
+				unnest(xpath('/collaborator/history_states/history_state/finish_date/text()', t0.data::xml))::text AS history_state_finish_date,
+				
+				-- Поля change_log
+				unnest(xpath('/collaborator/change_logs/change_log/org_name/text()', t0.data::xml))::text AS change_log_org_name,
+				unnest(xpath('/collaborator/change_logs/change_log/position_parent_name/text()', t0.data::xml))::text AS change_log_position_parent_name,
+				unnest(xpath('/collaborator/change_logs/change_log/position_name/text()', t0.data::xml))::text AS change_log_position_name,
+				unnest(xpath('/collaborator/change_logs/change_log/date/text()', t0.data::xml))::text AS change_log_date
+			FROM
+				dbo.collaborator t0
+			JOIN dbo.collaborators t1 ON t0.id = t1.id
+			WHERE t0.id = ${collaboratorId}
+		`);
+		
+		return collaborators;
+	} catch (e) {
+		throw Error("getCollaboratorDetails -> " + e);
+	}
+}
+
 function handler(body: object, method: string) {
 	const response = {
 		success: true,
@@ -59,7 +103,12 @@ function handler(body: object, method: string) {
 		response.data = getSubdivisions();
 	} else if (method === "getCollaborators") {
 		const subdivisionId = OptInt(body.GetOptProperty("subdivisionId"));
-		response.data = getCollaborators(subdivisionId);
+		response.data = getSubdivisionCollaborators(subdivisionId);
+	} else if (method === "getAllCollaboratorsList") {
+		response.data = getAllCollaboratorsList();
+	} else if (method === "getCollaboratorDetails") {
+		const collaboratorId = OptInt(body.GetOptProperty("collaboratorId"));
+		response.data = getCollaboratorDetails(collaboratorId);
 	}
 
 	return response;

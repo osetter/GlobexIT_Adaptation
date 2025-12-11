@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Subdivision } from '@shared/types/wt-objects/subdivision';
 import { processSubdivisions } from '@shared/utils/processSubdivisions';
 
-export const useSubdivisionFilter = (
-	subdivisions: Subdivision[],
-) => {
+export const useSubdivisionFilter = (subdivisions: Subdivision[]) => {
 	const [searchQuery, setSearchQuery] = useState('');
 
 	const filteredSubdivisions = useMemo(() => {
@@ -16,4 +14,3 @@ export const useSubdivisionFilter = (
 
 	return { searchQuery, setSearchQuery, filteredSubdivisions };
 };
-

@@ -30,3 +30,36 @@ export const getCollaborators = async (subdivisionId: number) => {
 		throw error;
 	}
 };
+
+export const getAllCollaboratorsList = async () => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'getAllCollaboratorsList',
+		});
+
+		return data;
+	} catch (error) {
+		console.error(
+			'Ошибка при выполнении запроса getAllCollaboratorsList: ',
+			error,
+		);
+		throw error;
+	}
+};
+
+export const getCollaboratorDetails = async (collaboratorId: number) => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'getCollaboratorDetails',
+			collaboratorId: collaboratorId,
+		});
+
+		return data;
+	} catch (error) {
+		console.error(
+			'Ошибка при выполнении запроса getCollaboratorDetails: ',
+			error,
+		);
+		throw error;
+	}
+};

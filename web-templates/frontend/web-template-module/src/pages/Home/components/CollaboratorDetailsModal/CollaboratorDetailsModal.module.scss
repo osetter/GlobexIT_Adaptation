@@ -1,0 +1,32 @@
+.modal__loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.modal__content {
+  margin-top: 16px;
+}
+
+.modal__descriptions {
+  margin-bottom: 24px;
+}
+
+.modal__section {
+  margin-top: 24px;
+}
+
+.modal__section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #262626;
+}
+
+.modal__empty {
+  color: #8c8c8c;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+}

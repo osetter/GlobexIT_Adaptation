@@ -35,4 +35,3 @@ export const useSubdivisions = () => {
 
 	return { subdivisions, loading, reload: loadSubdivisions };
 };
-

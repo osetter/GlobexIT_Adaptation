@@ -1,18 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { getCollaborators } from '@api/api';
+import { getAllCollaboratorsList } from '@api/api';
 import { Collaborator } from '@shared/types/wt-objects/collaborator';
 
-export const useCollaborators = () => {
+export const useAllCollaborators = () => {
 	const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
 	const [loading, setLoading] = useState(false);
 
-	const loadCollaborators = async (subdivisionId: number) => {
+	const loadAllCollaborators = async () => {
 		setLoading(true);
-		setCollaborators([]);
-
 		try {
-			const response = await getCollaborators(subdivisionId);
+			const response = await getAllCollaboratorsList();
 			if (response?.success && response?.data) {
 				setCollaborators(response.data);
 			} else if (response?.error) {
@@ -29,5 +27,9 @@ export const useCollaborators = () => {
 		}
 	};
 
-	return { collaborators, loading, loadCollaborators };
+	useEffect(() => {
+		loadAllCollaborators();
+	}, []);
+
+	return { collaborators, loading, reload: loadAllCollaborators };
 };

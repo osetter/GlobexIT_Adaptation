@@ -1,0 +1,19 @@
+.all-collaborators-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.all-collaborators-list__loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.all-collaborators-list__empty {
+  text-align: center;
+  color: #8c8c8c;
+  padding: 40px;
+  font-size: 14px;
+}

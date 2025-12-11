@@ -1,6 +1,6 @@
 import { Spin } from 'antd';
-import { SubdivisionCard } from '@shared/components/SubdivisionCard/SubdivisionCard';
 import { Subdivision } from '@shared/types/wt-objects/subdivision';
+import { SubdivisionCard } from '@shared/components/SubdivisionCard/SubdivisionCard';
 import styles from './SubdivisionsList.module.scss';
 
 interface SubdivisionsListProps {
@@ -28,25 +28,25 @@ export const SubdivisionsList = ({
 
 	if (subdivisions.length === 0) {
 		return (
-			<p className={styles['subdivisions-list__empty']}>
+			<div className={styles['subdivisions-list__empty']}>
 				{searchQuery
 					? 'Подразделения не найдены'
-					: 'Подразделения отсутствуют'}
-			</p>
+					: 'Нет доступных подразделений'}
+			</div>
 		);
 	}
 
 	return (
-		<>
+		<div className={styles['subdivisions-list']}>
 			{subdivisions.map((subdivision) => (
 				<SubdivisionCard
 					key={subdivision.id}
-					{...subdivision}
+					id={subdivision.id}
+					name={subdivision.name}
+					isSelected={subdivision.id === selectedSubdivisionId}
 					onClick={() => onSubdivisionClick(subdivision)}
-					isSelected={selectedSubdivisionId === subdivision.id}
 				/>
 			))}
-		</>
+		</div>
 	);
 };
-
