@@ -1,4 +1,5 @@
-import { Spin } from 'antd';
+import { Spin, Button, Tooltip } from 'antd';
+import { UserAddOutlined } from '@ant-design/icons';
 import { Collaborator } from '@shared/types/wt-objects/collaborator';
 import { CollaboratorCard } from '@shared/components/CollaboratorCard/CollaboratorCard';
 import styles from './AllCollaboratorsList.module.scss';
@@ -8,6 +9,8 @@ interface AllCollaboratorsListProps {
 	loading: boolean;
 	searchQuery: string;
 	onCollaboratorClick: (collaborator: Collaborator) => void;
+	onAddToTeam: (collaboratorId: number) => void;
+	addingToTeam?: boolean;
 }
 
 export const AllCollaboratorsList = ({
@@ -15,6 +18,8 @@ export const AllCollaboratorsList = ({
 	loading,
 	searchQuery,
 	onCollaboratorClick,
+	onAddToTeam,
+	addingToTeam = false,
 }: AllCollaboratorsListProps) => {
 	if (loading) {
 		return (
@@ -37,12 +42,27 @@ export const AllCollaboratorsList = ({
 	return (
 		<div className={styles['all-collaborators-list']}>
 			{collaborators.map((collaborator) => (
-				<CollaboratorCard
+				<div
 					key={collaborator.id}
-					id={collaborator.id}
-					fullname={collaborator.fullname}
-					onClick={() => onCollaboratorClick(collaborator)}
-				/>
+					className={styles['all-collaborators-list__item']}
+				>
+					<CollaboratorCard
+						id={collaborator.id}
+						fullname={collaborator.fullname}
+						onClick={() => onCollaboratorClick(collaborator)}
+					/>
+					<Tooltip title="Добавить в команду">
+						<Button
+							type="primary"
+							icon={<UserAddOutlined />}
+							onClick={() => onAddToTeam(collaborator.id)}
+							loading={addingToTeam}
+							className={styles['all-collaborators-list__action']}
+						>
+							Добавить в команду
+						</Button>
+					</Tooltip>
+				</div>
 			))}
 		</div>
 	);

@@ -16,7 +16,7 @@ export default ({ mode }: {mode: string}) => {
 			'@store': path.resolve(__dirname, './src/store'),
 		},
 	},
-	base: isProduction ? '/adaptation-structure/web-templates/frontend/web-template-module/dist' : '',
+	base: isProduction ? '/adaptation-structure/web-templates/frontend/web-template-module/dist' : '/',
 	server: {
 		open: true,
 		port: 5173,

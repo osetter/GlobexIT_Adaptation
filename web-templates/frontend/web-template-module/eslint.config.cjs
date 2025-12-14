@@ -44,6 +44,7 @@ module.exports = defineConfig([{
     },
 }, globalIgnores([
     "**/dist", 
+    "**/build",
     "**/.eslintrc.cjs",
     "**/eslint.config.cjs",
     "**/deployer"

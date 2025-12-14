@@ -1,6 +1,7 @@
 export interface Collaborator {
 	id: number;
 	fullname: string;
+	position_parent_id?: number;
 	history_state_state_id?: string;
 	history_state_start_date?: string;
 	history_state_finish_date?: string;

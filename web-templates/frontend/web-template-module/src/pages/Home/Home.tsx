@@ -1,47 +1,94 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs } from 'antd';
 import { Search } from '@shared/components/Search/Search';
+import { SubdivisionFilter } from '@shared/components/SubdivisionFilter/SubdivisionFilter';
 import { Subdivision } from '@shared/types/wt-objects/subdivision';
 import { Collaborator } from '@shared/types/wt-objects/collaborator';
-import { useSubdivisions } from '@shared/hooks/useSubdivisions';
+import { useSubdivisionsHierarchy } from '@shared/hooks/useSubdivisionsHierarchy';
 import { useCollaborators } from '@shared/hooks/useCollaborators';
-import { useSubdivisionFilter } from '@shared/hooks/useSubdivisionFilter';
-import { useAllCollaborators } from '@shared/hooks/useAllCollaborators';
+import { useCollaboratorsExcludingTeam } from '@shared/hooks/useCollaboratorsExcludingTeam';
 import { useCollaboratorFilter } from '@shared/hooks/useCollaboratorFilter';
 import { useCollaboratorDetails } from '@shared/hooks/useCollaboratorDetails';
+import { useTeam } from '@shared/hooks/useTeam';
+import { useTeamMembers } from '@shared/hooks/useTeamMembers';
+import { filterCollaboratorsBySubdivisions } from '@shared/utils/filterCollaboratorsBySubdivisions';
 import { SubdivisionsList } from './components/SubdivisionsList/SubdivisionsList';
 import { CollaboratorsList } from './components/CollaboratorsList/CollaboratorsList';
 import { AllCollaboratorsList } from './components/AllCollaboratorsList/AllCollaboratorsList';
+import { TeamList } from './components/TeamList/TeamList';
 import { CollaboratorDetailsModal } from './components/CollaboratorDetailsModal/CollaboratorDetailsModal';
 import styles from './Home.module.scss';
 
+const getTabFromPath = (pathname: string): string => {
+	// Проверяем путь /colls/:tab
+	const pathParts = pathname.split('/').filter(Boolean);
+	const lastPart = pathParts[pathParts.length - 1];
+
+	if (
+		lastPart === 'team' ||
+		lastPart === 'collaborators' ||
+		lastPart === 'subdivisions'
+	) {
+		return lastPart;
+	}
+
+	return 'subdivisions';
+};
+
 export const Home = () => {
-	const [activeTab, setActiveTab] = useState('subdivisions');
+	const navigate = useNavigate();
+	const location = useLocation();
+	const activeTab = useMemo(
+		() => getTabFromPath(location.pathname),
+		[location.pathname],
+	);
 	const [selectedCollaborator, setSelectedCollaborator] =
 		useState<Collaborator | null>(null);
-
-	// Подразделения
-	const { subdivisions, loading } = useSubdivisions();
-	const { searchQuery, setSearchQuery, filteredSubdivisions } =
-		useSubdivisionFilter(subdivisions);
 	const [selectedSubdivision, setSelectedSubdivision] =
 		useState<Subdivision | null>(null);
+	const [selectedSubdivisionIds, setSelectedSubdivisionIds] = useState<
+		number[]
+	>([]);
+	const [searchQuery, setSearchQuery] = useState('');
+
+	// Иерархия подразделений
+	const {
+		subdivisionTree,
+		subdivisions,
+		loading: loadingSubdivisions,
+	} = useSubdivisionsHierarchy();
 	const {
 		collaborators,
 		loading: loadingCollaborators,
 		loadCollaborators,
 	} = useCollaborators();
 
-	// Все сотрудники
+	// Сотрудники
 	const {
-		collaborators: allCollaborators,
-		loading: loadingAllCollaborators,
-	} = useAllCollaborators();
+		collaborators: collaboratorsExcludingTeam,
+		loading: loadingCollaboratorsExcludingTeam,
+		reload: reloadCollaboratorsExcludingTeam,
+	} = useCollaboratorsExcludingTeam();
 	const {
 		searchQuery: collaboratorSearchQuery,
 		setSearchQuery: setCollaboratorSearchQuery,
-		filteredCollaborators,
-	} = useCollaboratorFilter(allCollaborators);
+		filteredCollaborators: filteredCollaboratorsBySearch,
+	} = useCollaboratorFilter(collaboratorsExcludingTeam);
+
+	// Команда
+	const {
+		teamMembers,
+		subscriptions,
+		loading: loadingTeamMembers,
+		reload: reloadTeamMembers,
+		removeMember,
+	} = useTeamMembers();
+	const {
+		searchQuery: teamSearchQuery,
+		setSearchQuery: setTeamSearchQuery,
+		filteredCollaborators: filteredTeamMembersBySearch,
+	} = useCollaboratorFilter(teamMembers);
 
 	// Детали сотрудника
 	const {
@@ -50,6 +97,25 @@ export const Home = () => {
 		loadDetails,
 		clearDetails,
 	} = useCollaboratorDetails();
+
+	// Управление командой
+	const {
+		addCollaboratorToTeam,
+		removeCollaboratorFromTeam,
+		loading: teamActionLoading,
+	} = useTeam();
+
+	const handleTabChange = (key: string) => {
+		const currentPath = location.pathname.includes(
+			'/custom_web_template.html',
+		)
+			? '/custom_web_template.html'
+			: '/colls';
+
+		// Используем путь вместо query параметра
+		const newUrl = `${currentPath}/${key}`;
+		navigate(newUrl);
+	};
 
 	const handleSubdivisionClick = (subdivision: Subdivision) => {
 		setSelectedSubdivision(subdivision);
@@ -66,6 +132,45 @@ export const Home = () => {
 		clearDetails();
 	};
 
+	const handleAddToTeam = async (collaboratorId: number) => {
+		const success = await addCollaboratorToTeam(collaboratorId);
+		if (success) {
+			reloadCollaboratorsExcludingTeam();
+			reloadTeamMembers();
+		}
+	};
+
+	const handleRemoveFromTeam = async (subscriptionId: number) => {
+		const success = await removeCollaboratorFromTeam(subscriptionId);
+		if (success) {
+			removeMember(subscriptionId);
+			reloadCollaboratorsExcludingTeam();
+		}
+	};
+
+	// Фильтрация сотрудников по подразделениям
+	const filteredCollaborators = useMemo(() => {
+		let filtered = filteredCollaboratorsBySearch;
+		if (selectedSubdivisionIds.length > 0) {
+			filtered = filterCollaboratorsBySubdivisions(
+				filtered,
+				selectedSubdivisionIds,
+			);
+		}
+		return filtered;
+	}, [filteredCollaboratorsBySearch, selectedSubdivisionIds]);
+
+	const filteredTeamMembers = useMemo(() => {
+		let filtered = filteredTeamMembersBySearch;
+		if (selectedSubdivisionIds.length > 0) {
+			filtered = filterCollaboratorsBySubdivisions(
+				filtered,
+				selectedSubdivisionIds,
+			);
+		}
+		return filtered;
+	}, [filteredTeamMembersBySearch, selectedSubdivisionIds]);
+
 	const subdivisionsTabContent = (
 		<div className={styles['home-page__content']}>
 			<div className={styles['home-page__subdivisions']}>
@@ -73,8 +178,8 @@ export const Home = () => {
 					Подразделения
 				</h2>
 				<SubdivisionsList
-					subdivisions={filteredSubdivisions}
-					loading={loading}
+					subdivisionTree={subdivisionTree}
+					loading={loadingSubdivisions}
 					searchQuery={searchQuery}
 					selectedSubdivisionId={selectedSubdivision?.id}
 					onSubdivisionClick={handleSubdivisionClick}
@@ -95,11 +200,46 @@ export const Home = () => {
 
 	const collaboratorsTabContent = (
 		<div className={styles['home-page__collaborators-tab']}>
+			<div className={styles['home-page__filters']}>
+				<SubdivisionFilter
+					subdivisions={subdivisions}
+					selectedSubdivisionIds={selectedSubdivisionIds}
+					onChange={setSelectedSubdivisionIds}
+					placeholder="Фильтр по подразделениям"
+				/>
+			</div>
 			<AllCollaboratorsList
 				collaborators={filteredCollaborators}
-				loading={loadingAllCollaborators}
+				loading={loadingCollaboratorsExcludingTeam}
 				searchQuery={collaboratorSearchQuery}
 				onCollaboratorClick={handleCollaboratorClick}
+				onAddToTeam={handleAddToTeam}
+				addingToTeam={teamActionLoading}
+			/>
+		</div>
+	);
+
+	const teamTabContent = (
+		<div className={styles['home-page__team-tab']}>
+			<div className={styles['home-page__filters']}>
+				<SubdivisionFilter
+					subdivisions={subdivisions}
+					selectedSubdivisionIds={selectedSubdivisionIds}
+					onChange={setSelectedSubdivisionIds}
+					placeholder="Фильтр по подразделениям"
+				/>
+			</div>
+			<TeamList
+				teamMembers={filteredTeamMembers}
+				subscriptions={subscriptions.map((sub) => ({
+					id: sub.subscription_id,
+					person_id: sub.person_id,
+				}))}
+				loading={loadingTeamMembers}
+				searchQuery={teamSearchQuery}
+				onCollaboratorClick={handleCollaboratorClick}
+				onRemoveFromTeam={handleRemoveFromTeam}
+				removingFromTeam={teamActionLoading}
 			/>
 		</div>
 	);
@@ -115,6 +255,11 @@ export const Home = () => {
 			label: 'Сотрудники',
 			children: collaboratorsTabContent,
 		},
+		{
+			key: 'team',
+			label: 'Команда',
+			children: teamTabContent,
+		},
 	];
 
 	return (
@@ -128,15 +273,24 @@ export const Home = () => {
 					/>
 				)}
 				{activeTab === 'collaborators' && (
+					<>
+						<Search
+							value={collaboratorSearchQuery}
+							onChange={setCollaboratorSearchQuery}
+							placeholder="Поиск сотрудников..."
+						/>
+					</>
+				)}
+				{activeTab === 'team' && (
 					<Search
-						value={collaboratorSearchQuery}
-						onChange={setCollaboratorSearchQuery}
+						value={teamSearchQuery}
+						onChange={setTeamSearchQuery}
 						placeholder="Поиск сотрудников..."
 					/>
 				)}
 				<Tabs
 					activeKey={activeTab}
-					onChange={setActiveTab}
+					onChange={handleTabChange}
 					items={tabItems}
 					className={styles['home-page__tabs']}
 				/>

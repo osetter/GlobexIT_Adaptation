@@ -63,3 +63,79 @@ export const getCollaboratorDetails = async (collaboratorId: number) => {
 		throw error;
 	}
 };
+
+export const getSubdivisionsHierarchy = async () => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'getSubdivisionsHierarchy',
+		});
+
+		return data;
+	} catch (error) {
+		console.error(
+			'Ошибка при выполнении запроса getSubdivisionsHierarchy: ',
+			error,
+		);
+		throw error;
+	}
+};
+
+export const getUserSubscriptions = async () => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'getUserSubscriptions',
+		});
+
+		return data;
+	} catch (error) {
+		console.error(
+			'Ошибка при выполнении запроса getUserSubscriptions: ',
+			error,
+		);
+		throw error;
+	}
+};
+
+export const addToTeam = async (collaboratorId: number) => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'addToTeam',
+			collaboratorId: collaboratorId,
+		});
+
+		return data;
+	} catch (error) {
+		console.error('Ошибка при выполнении запроса addToTeam: ', error);
+		throw error;
+	}
+};
+
+export const removeFromTeam = async (subscriptionId: number) => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'removeFromTeam',
+			subscriptionId: subscriptionId,
+		});
+
+		return data;
+	} catch (error) {
+		console.error('Ошибка при выполнении запроса removeFromTeam: ', error);
+		throw error;
+	}
+};
+
+export const getCollaboratorsExcludingTeam = async () => {
+	try {
+		const { data } = await axios.post(BACKEND_URL, {
+			method: 'getCollaboratorsExcludingTeam',
+		});
+
+		return data;
+	} catch (error) {
+		console.error(
+			'Ошибка при выполнении запроса getCollaboratorsExcludingTeam: ',
+			error,
+		);
+		throw error;
+	}
+};

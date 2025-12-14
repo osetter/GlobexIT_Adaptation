@@ -1,7 +1,22 @@
 .all-collaborators-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
+}
+
+.all-collaborators-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.all-collaborators-list__action {
+  flex-shrink: 0;
 }
 
 .all-collaborators-list__loader {

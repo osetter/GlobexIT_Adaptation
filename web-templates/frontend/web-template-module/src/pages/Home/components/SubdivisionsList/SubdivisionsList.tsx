@@ -1,10 +1,10 @@
-import { Spin } from 'antd';
 import { Subdivision } from '@shared/types/wt-objects/subdivision';
-import { SubdivisionCard } from '@shared/components/SubdivisionCard/SubdivisionCard';
+import { SubdivisionTree } from '@shared/components/SubdivisionTree/SubdivisionTree';
+import { filterSubdivisionTree } from '@shared/utils/filterSubdivisionTree';
 import styles from './SubdivisionsList.module.scss';
 
 interface SubdivisionsListProps {
-	subdivisions: Subdivision[];
+	subdivisionTree: Subdivision[];
 	loading: boolean;
 	searchQuery: string;
 	selectedSubdivisionId?: number;
@@ -12,41 +12,22 @@ interface SubdivisionsListProps {
 }
 
 export const SubdivisionsList = ({
-	subdivisions,
+	subdivisionTree,
 	loading,
 	searchQuery,
 	selectedSubdivisionId,
 	onSubdivisionClick,
 }: SubdivisionsListProps) => {
-	if (loading) {
-		return (
-			<div className={styles['subdivisions-list__loader']}>
-				<Spin size="large" />
-			</div>
-		);
-	}
-
-	if (subdivisions.length === 0) {
-		return (
-			<div className={styles['subdivisions-list__empty']}>
-				{searchQuery
-					? 'Подразделения не найдены'
-					: 'Нет доступных подразделений'}
-			</div>
-		);
-	}
+	const filteredTree = filterSubdivisionTree(subdivisionTree, searchQuery);
 
 	return (
 		<div className={styles['subdivisions-list']}>
-			{subdivisions.map((subdivision) => (
-				<SubdivisionCard
-					key={subdivision.id}
-					id={subdivision.id}
-					name={subdivision.name}
-					isSelected={subdivision.id === selectedSubdivisionId}
-					onClick={() => onSubdivisionClick(subdivision)}
-				/>
-			))}
+			<SubdivisionTree
+				subdivisions={filteredTree}
+				loading={loading}
+				selectedSubdivisionId={selectedSubdivisionId}
+				onSubdivisionClick={onSubdivisionClick}
+			/>
 		</div>
 	);
 };
