@@ -6,14 +6,6 @@ interface IError {
 
 /* --- utils --- */
 /**
- * Выбирает все записи sql запроса
- * @param {string} query - sql-выражение
- */
-function selectAll<T>(query: string) {
-	return ArraySelectAll<T>(tools.xquery(`sql: ${query}`));
-}
-
-/**
  * Создает поток ошибки с объектом error
  * @param {object} source - источник ошибки
  * @param {object} errorObject - объект ошибки
@@ -23,18 +15,31 @@ function HttpError(source: string, error: IError) {
 }
 
 /* --- logic --- */
-function getColls() {
+function setCollaboratorCredentials(collaboratorId: number, password: string) {
 	try {
-		selectAll("SELECT * FROM collaborators");
+		const docCollaborator = tools.open_doc<CollaboratorDocument>(collaboratorId);
+		const docCollaboratorTE = docCollaborator.TopElem;
+
+		docCollaboratorTE.password.Value = password;
+		
+		docCollaborator.Save();
 	} catch (err) {
-		HttpError("getColls", err as IError);
+		HttpError("setCollaboratorCredentials", err);
 	}
+}
+
+function generateRandomPassword(length: number): string {
+	const passwordDict = "QWERTYUPASDFGHJKLZXCVBNMqwertyuipasdfghjkzxcvbnm123456789!@#$%^&*_+-=?";
+	return tools.random_string(length, passwordDict);
 }
 
 /* --- start point --- */
 function main() {
 	try {
-		getColls();
+		const collaboratorId = OptInt(OBJECTS_ID_STR);
+		const password = generateRandomPassword(12);
+
+		setCollaboratorCredentials(collaboratorId, password);
 	} catch (err) {
 		log("Выполнение прервано из-за ошибки: main -> " + err, "error");
 	}
@@ -60,7 +65,7 @@ EnableLog(logConfig.code, GLOBAL.IS_DEBUG);
  */
 function log(message: string, type?: string) {
 	type = IsEmptyValue(type) ? "INFO" : StrUpperCase(type);
-
+	
 	if (ObjectType(message) === "JsObject" || ObjectType(message) === "JsArray" || ObjectType(message) === "XmLdsSeq") {
 		message = tools.object_to_text(message, "json");
 	}
@@ -74,10 +79,10 @@ function log(message: string, type?: string) {
 	}
 }
 
-log("--- Начало. Агент {название агента} ---");
+log("--- Начало. Агент установки случайных логинов и паролей ---");
 
 main();
 
-log("--- Конец. Агент {название агента} ---");
+log("--- Конец. Агент установки случайных логинов и паролей ---");
 
 export {};
