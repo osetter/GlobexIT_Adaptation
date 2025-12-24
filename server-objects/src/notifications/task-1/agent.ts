@@ -3,7 +3,7 @@ interface ICollaborator {
     id: number;
     employee_name: string;
     hire_date: Date;
-    manager_name: string | null;
+    manager_name: string;
 }
 /* --- utils --- */
 /**
