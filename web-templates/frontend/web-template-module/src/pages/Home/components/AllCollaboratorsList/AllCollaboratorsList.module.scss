@@ -1,0 +1,34 @@
+.all-collaborators-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.all-collaborators-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.all-collaborators-list__action {
+  flex-shrink: 0;
+}
+
+.all-collaborators-list__loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.all-collaborators-list__empty {
+  text-align: center;
+  color: #8c8c8c;
+  padding: 40px;
+  font-size: 14px;
+}

@@ -1,0 +1,19 @@
+.subdivisions-list {
+  display: contents;
+}
+
+.subdivisions-list__loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  grid-column: 1 / -1;
+}
+
+.subdivisions-list__empty {
+  text-align: center;
+  color: #8c8c8c;
+  padding: 40px;
+  font-size: 14px;
+  grid-column: 1 / -1;
+}

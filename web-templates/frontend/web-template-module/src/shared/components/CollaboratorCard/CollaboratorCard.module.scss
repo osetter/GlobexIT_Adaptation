@@ -1,0 +1,22 @@
+.collaborator-card {
+  margin: 0;
+
+  :global(.ant-card-body) {
+    padding: 12px;
+  }
+}
+
+.collaborator-card__name {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+  line-height: 1.4;
+}
+
+.collaborator-card__id {
+  margin: 0;
+  font-size: 11px;
+  color: #8c8c8c;
+  line-height: 1.3;
+}
