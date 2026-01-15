@@ -1,0 +1,21 @@
+<%
+NameImg = 'dust2.png';
+if ( LdsIsServer ) {
+    fldAttachmentChild = docActiveNotification.TopElem.attachments.AddChild();
+    fldAttachmentChild.data.LoadFromFile('x-local://wt/web/project/images/logo/'+NameImg); 
+    fldAttachmentChild.name = NameImg;
+}
+else {
+    fldAttachmentChild = docActiveNotification.TopElem.attachments.AddChild();
+    img = LoadUrlData(UrlAppendPath(global_settings.settings.portal_base_url, '/project/images/logo/'+NameImg));
+    fldAttachmentChild.data = img;
+    fldAttachmentChild.name = NameImg;
+}
+%>
+<body>
+    <div class="content-section">
+        <p>Уважаемый, <strong><%=objDoc.fullname%></strong>!</p>
+        
+        <p>Сотрудники: <strong><%=Text%></strong> вступили в должность.</p>
+    </div>
+</body>

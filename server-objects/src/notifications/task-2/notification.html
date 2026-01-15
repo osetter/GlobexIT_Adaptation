@@ -1,0 +1,28 @@
+<%
+NameImg = 'dust2.png';
+if ( LdsIsServer ) {
+    fldAttachmentChild = docActiveNotification.TopElem.attachments.AddChild();
+    fldAttachmentChild.data.LoadFromFile('x-local://wt/web/project/images/logo/'+NameImg); 
+    fldAttachmentChild.name = NameImg;
+}
+else {
+    fldAttachmentChild = docActiveNotification.TopElem.attachments.AddChild();
+    img = LoadUrlData(UrlAppendPath(global_settings.settings.portal_base_url, '/project/images/logo/'+NameImg));
+    fldAttachmentChild.data = img;
+    fldAttachmentChild.name = NameImg;
+}
+%>
+<body>
+    <div class="content-section">
+        <p>Уважаемый(ая), <strong><%=objDoc.fullname%></strong>!</p>
+        
+        <p>Поздравляем со вступлением в должность, твой руководитель — <strong><%=Text%></strong> расскажет тебе что к чему.</p>
+        
+        <% if (objDoc.position_parent_id.HasValue && objDoc.position_parent_id.ForeignElem.name == "Головной офис") { %>
+            <p style="margin-top: 20px; font-weight: bold;">
+                Ссылка на анкету (только для сотрудников Головного офиса) — 
+                <a href="https://portal.company.ru/survey" style="color: #007bff;">тут</a>.
+            </p>
+        <% } %>
+    </div>
+</body>
