@@ -1,5 +1,10 @@
 wsjs-main
 
+# WebSoft build outputs
+web-templates/backend/build/
+web-templates/frontend/*/dist/
+web-templates/frontend/*/dist-ssr/
+
 # Logs
 logs
 *.log

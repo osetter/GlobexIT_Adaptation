@@ -1,4 +1,3 @@
-//= require ./modules/devmode.ts
 //= require ./modules/req_headers.ts
 
 import { DEV_MODE } from "../assesment-procedure/modules/devmode";
@@ -15,12 +14,12 @@ interface ISubdivision {
 }
 
 /* --- utils --- */
-function getParam(name: string, defaultVal: string = "undefined") {
+function getParam(name: string, defaultVal: string = undefined) {
 	return tools_web.get_web_param(curParams, name, defaultVal, true, "");
 }
 
-function err(source: string, error: unknown, text = "") {
-	throw new Error(`${source} -> ${text ? text + " " : ""}${error}`);
+function err(source: string, error: { message: string; }, text = "") {
+	throw new Error(`${source} -> ${text ? text + " " : ""}${error.message}`);
 }
 
 /* --- global --- */
@@ -28,6 +27,40 @@ const curUserId: number = DEV_MODE
 	? OptInt("7000000000000000")
 	: OptInt(curUserID);
 const DEBUG_MODE = tools_web.is_true(getParam("IS_DEBUG", undefined));
+
+/* --- types --- */
+interface IReportRowSQL {
+	questionnaire_id: XmlElem<number>;
+	assessment_plan_id: XmlElem<number>;
+	expert_person_fullname: XmlElem<string>;
+	overall: XmlElem<string>;
+	plan_id: XmlElem<number>;
+	person_fullname: XmlElem<string>;
+	workflow_state_name: XmlElem<string>;
+	assessment_appraise_id: XmlElem<number>;
+	procedure_id: XmlElem<number>;
+	name: XmlElem<string>;
+	start_date: XmlElem<string>;
+	end_date: XmlElem<string>;
+	code: XmlElem<string>;
+}
+
+interface IDateFormatResult {
+	date_str: string;
+	error: number;
+}
+
+type ReportRowType = {
+	PrimaryKey: string;
+	code: string;
+	name: string;
+	startDate: string;
+	endDate: string;
+	personName: string;
+	workflowStateName: string;
+	expertName: string;
+	res: string;
+};
 
 /* --- logic --- */
 type DepsType = { name: string; id: number; selected: boolean; };
@@ -53,22 +86,97 @@ function getDepartments(id: number) {
 
 		return result;
 	} catch (e) {
-		err("getDepartments", e);
+		err("getDepartments", { message: String(e) });
+	}
+}
+
+function getAssessmentReport(): ReportRowType[] {
+	try {
+		const data = selectAll<IReportRowSQL>(`
+			SELECT 
+				pas.id AS questionnaire_id,
+				pas.assessment_plan_id,  
+				pas.expert_person_fullname,
+				pas.overall,
+				ap.id AS plan_id,
+				ap.assessment_appraise_id,
+				ap.person_fullname, 
+				ap.workflow_state_name,
+				aa.id AS procedure_id, 
+				aa.name, 
+				aa.start_date, 
+				aa.end_date,
+				aa.code
+			FROM 
+				dbo.pas
+			LEFT JOIN 
+				dbo.assessment_plans ap ON pas.assessment_plan_id = ap.id
+			LEFT JOIN 
+				dbo.assessment_appraises aa ON ap.assessment_appraise_id = aa.id
+			WHERE 
+				aa.code = 'adapt1';
+		`);
+
+		return data.map((item) => {
+			const startDate = item.start_date.Value;
+			const endDate = item.end_date.Value;
+
+			let startDateFormatted = "";
+			let endDateFormatted = "";
+
+			if (startDate) {
+				const startResult: IDateFormatResult = tools.call_code_library_method(
+					"libSchedule",
+					"get_str_date_from_date",
+					[startDate],
+				);
+				startDateFormatted = startResult.date_str;
+			}
+
+			if (endDate) {
+				const endResult: IDateFormatResult = tools.call_code_library_method(
+					"libSchedule",
+					"get_str_date_from_date",
+					[endDate],
+				);
+				endDateFormatted = endResult.date_str;
+			}
+
+			return {
+				PrimaryKey: String(item.questionnaire_id.Value),
+				code: item.code.Value,
+				name: item.name.Value,
+				startDate: startDateFormatted,
+				endDate: endDateFormatted,
+				personName: item.person_fullname.Value,
+				workflowStateName: item.workflow_state_name.Value,
+				expertName: item.expert_person_fullname.Value,
+				res: item.overall.Value,
+			};
+		});
+	} catch (e) {
+		log(`getAssessmentReport error: ${e}`, "error");
+		err("getAssessmentReport", { message: String(e) });
+		return [];
 	}
 }
 
 function handler(body: object, method: string) {
-	const response = {
-		success: true,
-		error: false,
-		data: [] as unknown
-	};
+	const response = { success: true, error: false, data: [] as unknown };
 
-	if (method === "getDepartments") {
-		const depID = OptInt(body.GetOptProperty("objectId"), 0);
-		response.data = getDepartments(depID);
-	} else if (method === "getUserId") {
-		response.data = curUserId;
+	switch (method) {
+		case "getDepartments":
+			const depID = OptInt(body.GetOptProperty("objectId"), 0);
+			response.data = getDepartments(depID);
+			break;
+		case "getUserId":
+			response.data = curUserId;
+			break;
+		case "getAssessmentReport":
+			response.data = getAssessmentReport();
+			break;
+		default:
+			throw new Error(`Неизвестный метод: ${method}`);
 	}
 
 	return response;
@@ -80,11 +188,11 @@ function main(req: Request, res: Response) {
 		const body: IRequestBody = tools.read_object(req.Body);
 
 		const method = tools_web.convert_xss(
-			body.GetOptProperty("method") as string
+			body.GetOptProperty("method") as string,
 		);
 
 		if (IsEmptyValue(method) || method === "undefined") {
-			err("main", "Не найдено поле method в body" );
+			err("main", { message: "Не найдено поле method в body" });
 		}
 
 		const payload = handler(body, method);
@@ -92,16 +200,16 @@ function main(req: Request, res: Response) {
 		res.Write(tools.object_to_text(payload, "json"));
 	} catch (error) {
 		if (DEV_MODE) {
-			Response.Write(error);
+			Response.Write(error.message);
 		} else {
-			log(`[uid:${curUserId}] -> ${error}`, "error");
+			log(`[uid:${curUserId}] -> ${error.message}`, "error");
 			Request.SetRespStatus(500, "");
 			const res = {
 				data: [] as [],
 				success: false,
 				error: true,
-				message: "Произошла ошибка на стороне сервера",
-				log: logConfig.code
+				message: "Произошла ошибка на стороне сервера" + error.message,
+				log: logConfig.code,
 			};
 			Response.Write(tools.object_to_text(res, "json"));
 		}
