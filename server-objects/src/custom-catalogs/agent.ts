@@ -53,7 +53,7 @@ function getCollaboratorId(code: string): number | null {
 		SELECT 
 			id
 		FROM dbo.collaborators
-		WHERE code = '${code}';
+		WHERE code = ${XQueryLiteral(code)};
 	`);
 
 	return rows.length ? OptInt(rows[0].id) : null;
@@ -139,8 +139,8 @@ function getCellValue(cells: any, row: number, col: number): string {
 
 function findCatalogEntry(code: string): any {
 	const query =
-		`for $e in cc_custom_catalog_task
-		 where $e/data/TopElem/code = ${code}
+		`for $e in cc_custom_catalog_tasks
+		 where $e/code = ${XQueryLiteral(code)}
 		 return $e`;
 
 	const result = tools.xquery(query);
